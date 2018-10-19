@@ -6,10 +6,24 @@ New styles:
 
 Improvements:
 
+- Fixed Dockerfile definition when using highlight continuation parameter, by [Laurent Voullemier][]
+- Added tests & new `annotation` and `verbatim` keywords to *Crystal*, by [Benoit de Chezelles][]
+- Added missing dockerfile markup tests, by [Laurent Voullemier][]
+  Allow empty prompt text in clojure-repl, by [Egor Rogov][]
+
+[Laurent Voullemier]: https://github.com/l-vo
+[Benoit de Chezelles]: https://github.com/bew
+
+## Version 9.13.1
+
+Improvements:
+
 - *C#* function declarations no longer include trailing whitespace, by [JeremyTCD][]
 - Added new and missing keywords to *AngelScript*, by [Melissa Geels][]
 - *TypeScript* decorator factories highlighting fix, by [Antoine Boisier-Michaud][]
 - Added support for multiline strings to *Swift*, by [Alejandro Isaza][]
+- Fixed issue that was causing some minifiers to fail.
+- Fixed `autoDetection` to accept language aliases.
 
 [JeremyTCD]: https://github.com/JeremyTCD
 [Melissa Geels]: https://github.com/codecat
