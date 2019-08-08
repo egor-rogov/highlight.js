@@ -27,7 +27,8 @@ work for you, you can specify the language in the `class` attribute:
 <pre><code class="html">...</code></pre>
 ```
 
-The list of supported languages, corresponding classes, and package names:
+<details>
+<summary>The list of supported languages, corresponding classes, and package names</summary>
 
 | Language                | Classes                | Package |
 | :-----------------------| :--------------------- | :------ |
@@ -208,6 +209,7 @@ The list of supported languages, corresponding classes, and package names:
 | XQuery                  | xquery, xpath, xq      |         |
 | YAML                    | yml, yaml              |         |
 | Zephir                  | zephir, zep            |         |
+</details>
 
 Classes can also be prefixed with either `language-` or `lang-`.
 
