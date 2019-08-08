@@ -28,7 +28,7 @@ work for you, you can specify the language in the `class` attribute:
 ```
 
 <details>
-<summary>The list of supported languages, corresponding classes, and package names</summary>
+<summary>**The list of supported languages and corresponding classes.**</summary>
 
 | Language                | Classes                | Package |
 | :-----------------------| :--------------------- | :------ |
@@ -209,6 +209,9 @@ work for you, you can specify the language in the `class` attribute:
 | XQuery                  | xquery, xpath, xq      |         |
 | YAML                    | yml, yaml              |         |
 | Zephir                  | zephir, zep            |         |
+
+Languages with the specified package name are defined in separate repositories
+and not included in `highlight.pack.js`.
 </details>
 
 Classes can also be prefixed with either `language-` or `lang-`.
@@ -225,9 +228,6 @@ To disable highlighting altogether use the `nohighlight` class:
 ```html
 <pre><code class="nohighlight">...</code></pre>
 ```
-
-Languages with the specified package name are defined in separate repositiries
-and not included in `highlight.pack.js`.
 
 ## Custom Initialization
 
