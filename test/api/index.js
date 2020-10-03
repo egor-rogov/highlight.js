@@ -11,4 +11,6 @@ describe('hljs', function() {
   require('./autoDetection');
   require('./highlight');
   require('./fixmarkup');
+  require('./keywords');
+  require('./registerAlias');
 });

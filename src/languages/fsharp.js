@@ -2,17 +2,24 @@
 Language: F#
 Author: Jonas Follesø <jonas@follesoe.no>
 Contributors: Troy Kershaw <hello@troykershaw.com>, Henrik Feldt <henrik@haf.se>
+Website: https://docs.microsoft.com/en-us/dotnet/fsharp/
 Category: functional
 */
-function(hljs) {
-  var TYPEPARAM = {
-    begin: '<', end: '>',
+
+/** @type LanguageFn */
+export default function(hljs) {
+  const TYPEPARAM = {
+    begin: '<',
+    end: '>',
     contains: [
-      hljs.inherit(hljs.TITLE_MODE, {begin: /'[a-zA-Z0-9_]+/})
+      hljs.inherit(hljs.TITLE_MODE, {
+        begin: /'[a-zA-Z0-9_]+/
+      })
     ]
   };
 
   return {
+    name: 'F#',
     aliases: ['fs'],
     keywords:
       'abstract and as assert base begin class default delegate do done ' +
@@ -30,17 +37,25 @@ function(hljs) {
       },
       {
         className: 'string',
-        begin: '@"', end: '"',
-        contains: [{begin: '""'}]
+        begin: '@"',
+        end: '"',
+        contains: [{
+          begin: '""'
+        }]
       },
       {
         className: 'string',
-        begin: '"""', end: '"""'
+        begin: '"""',
+        end: '"""'
       },
-      hljs.COMMENT('\\(\\*', '\\*\\)'),
+      hljs.COMMENT('\\(\\*(\\s)', '\\*\\)', {
+        contains: ["self"]
+      }),
       {
         className: 'class',
-        beginKeywords: 'type', end: '\\(|=|$', excludeEnd: true,
+        beginKeywords: 'type',
+        end: '\\(|=|$',
+        excludeEnd: true,
         contains: [
           hljs.UNDERSCORE_TITLE_MODE,
           TYPEPARAM
@@ -48,16 +63,19 @@ function(hljs) {
       },
       {
         className: 'meta',
-        begin: '\\[<', end: '>\\]',
+        begin: '\\[<',
+        end: '>\\]',
         relevance: 10
       },
       {
         className: 'symbol',
         begin: '\\B(\'[A-Za-z])\\b',
-        contains: [hljs.BACKSLASH_ESCAPE]
+        contains: [
+          hljs.BACKSLASH_ESCAPE
+        ]
       },
       hljs.C_LINE_COMMENT_MODE,
-      hljs.inherit(hljs.QUOTE_STRING_MODE, {illegal: null}),
+      hljs.inherit(hljs.QUOTE_STRING_MODE, { illegal: null }),
       hljs.C_NUMBER_MODE
     ]
   };

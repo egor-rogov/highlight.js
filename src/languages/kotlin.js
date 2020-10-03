@@ -1,19 +1,20 @@
 /*
  Language: Kotlin
+ Description: Kotlin is an OSS statically typed programming language that targets the JVM, Android, JavaScript and Native.
  Author: Sergey Mashkov <cy6erGn0m@gmail.com>
+ Website: https://kotlinlang.org
+ Category: common
  */
 
 
-function(hljs) {
+export default function(hljs) {
   var KEYWORDS = {
     keyword:
       'abstract as val var vararg get set class object open private protected public noinline ' +
       'crossinline dynamic final enum if else do while for when throw try catch finally ' +
       'import package is in fun override companion reified inline lateinit init ' +
       'interface annotation data sealed internal infix operator out by constructor super ' +
-      'tailrec where const inner suspend typealias external expect actual ' +
-      // to be deleted soon
-      'trait volatile transient native default',
+      'tailrec where const inner suspend typealias external expect actual',
     built_in:
       'Byte Short Char Int Long Boolean Float Double Void Unit Nothing',
     literal:
@@ -38,7 +39,7 @@ function(hljs) {
   // for string templates
   var SUBST = {
     className: 'subst',
-    begin: '\\${', end: '}', contains: [hljs.APOS_STRING_MODE, hljs.C_NUMBER_MODE]
+    begin: '\\${', end: '}', contains: [hljs.C_NUMBER_MODE]
   };
   var VARIABLE = {
     className: 'variable', begin: '\\$' + hljs.UNDERSCORE_IDENT_RE
@@ -47,7 +48,7 @@ function(hljs) {
     className: 'string',
     variants: [
       {
-        begin: '"""', end: '"""',
+        begin: '"""', end: '"""(?=[^"])',
         contains: [VARIABLE, SUBST]
       },
       // Can't use built-in modes easily, as we want to use STRING in the meta
@@ -65,6 +66,7 @@ function(hljs) {
       }
     ]
   };
+  SUBST.contains.push(STRING)
 
   var ANNOTATION_USE_SITE = {
     className: 'meta', begin: '@(?:file|property|field|get|set|receiver|param|setparam|delegate)\\s*:(?:\\s*' + hljs.UNDERSCORE_IDENT_RE + ')?'
@@ -107,8 +109,22 @@ function(hljs) {
     '/\\*', '\\*/',
     { contains: [ hljs.C_BLOCK_COMMENT_MODE ] }
   );
+  var KOTLIN_PAREN_TYPE = {
+    variants: [
+	  { className: 'type',
+	    begin: hljs.UNDERSCORE_IDENT_RE
+	  },
+	  { begin: /\(/, end: /\)/,
+	    contains: [] //defined later
+	  }
+	]
+  };
+  var KOTLIN_PAREN_TYPE2 = KOTLIN_PAREN_TYPE;
+  KOTLIN_PAREN_TYPE2.variants[1].contains = [ KOTLIN_PAREN_TYPE ];
+  KOTLIN_PAREN_TYPE.variants[1].contains = [ KOTLIN_PAREN_TYPE2 ];
 
   return {
+    name: 'Kotlin',
     aliases: ['kt'],
     keywords: KEYWORDS,
     contains : [
@@ -158,7 +174,7 @@ function(hljs) {
               {
                 begin: /:/, end: /[=,\/]/, endsWithParent: true,
                 contains: [
-                  {className: 'type', begin: hljs.UNDERSCORE_IDENT_RE},
+                  KOTLIN_PAREN_TYPE,
                   hljs.C_LINE_COMMENT_MODE,
                   KOTLIN_NESTED_COMMENT
                 ],
