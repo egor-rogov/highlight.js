@@ -4,15 +4,12 @@ Library API
 Highlight.js exports a few functions as methods of the ``hljs`` object.
 
 
-``highlight(languageName, code, ignore_illegals, continuation)``
-----------------------------------------------------------------
+``highlight(languageName, code, ignoreIllegals, continuation)`` (deprecated with 10.7)
+--------------------------------------------------------------------------------------
 
-Core highlighting function.
-Accepts a language name, or an alias, and a string with the code to highlight.
-The ``ignore_illegals`` parameter, when present and evaluates to a true value,
-forces highlighting to finish even in case of detecting illegal syntax for the
-language instead of throwing an exception.
-The ``continuation`` is an optional mode stack representing unfinished parsing.
+**This is the old API, please see the new API immediately below.**
+
+``continuation`` is an optional mode stack representing unfinished parsing.
 When present, the function will restart parsing from this state instead of
 initializing a new one.  This is used internally for `sublanguage` support.
 
@@ -20,6 +17,18 @@ Note: `continuation` is NOT intended to support line-by-line highlighting
 because there is no requirement that a grammar handle linebreaks in any special
 way. It's quite possible for a grammar to have a single mode/regex that matches
 MANY lines at once.  This is not discouraged and entirely up to the grammar.
+
+
+
+``highlight(code, {language, ignoreIllegals})``
+--------------------------------------------------------------------------------------
+
+Core highlighting function.  Accepts the code to highlight (string) and a list of options (object).
+The ``language`` parameter must be present and specify the language name or alias
+of the grammar to be used for highlighting.
+The ``ignoreIllegals`` is an optional parameter than when true forces highlighting
+to finish even in case of detecting illegal syntax for the
+language instead of throwing an exception.
 
 Returns an object with the following properties:
 
@@ -45,8 +54,10 @@ Returns an object with the following properties:
 * ``second_best``: object with the same structure for second-best heuristically detected language (may be absent)
 
 
-``fixMarkup(value)``
---------------------
+``fixMarkup(value)`` (deprecated as of 10.3)
+--------------------------------------------
+
+**fixMarkup is deprecated and will be removed entirely in v11.**
 
 Post-processing of the highlighted markup. Currently consists of replacing indentation TAB characters and using ``<br>`` tags instead of new-line characters. Options are set globally with ``configure``.
 
@@ -59,7 +70,7 @@ Accepts a string with the highlighted markup.
 Applies highlighting to a DOM node containing code.
 
 This function is the one to use to apply highlighting dynamically after page load
-or within initialization code of third-party Javascript frameworks.
+or within initialization code of third-party JavaScript frameworks.
 
 The function uses language detection by default but you can specify the language
 in the ``class`` attribute of the DOM node. See the :doc:`class reference
@@ -89,14 +100,25 @@ Accepts an object representing options with the values to updated. Other options
   hljs.initHighlighting();
 
 
-``initHighlighting()``
+``highlightAll()``
+------------------
+
+Applies highlighting to all ``<pre><code>...</code></pre>`` blocks on a page.
+This can be called before or after the page's ``onload`` event has fired.
+
+
+``initHighlighting()`` (deprecated as of 10.6)
 ----------------------
+
+*Deprecated:* Please use ``highlightAll()`` instead.
 
 Applies highlighting to all ``<pre><code>...</code></pre>`` blocks on a page.
 
 
-``initHighlightingOnLoad()``
+``initHighlightingOnLoad()`` (deprecated as of 10.6)
 ----------------------------
+
+*Deprecated:* Please use ``highlightAll()`` instead.
 
 Attaches highlighting to the page load event.
 
@@ -110,6 +132,14 @@ Adds new language to the library under the specified name. Used mostly internall
 * ``languageDefinition``: a function that returns an object which represents the
   language definition. The function is passed the ``hljs`` object to be able
   to use common regular expressions defined within it.
+
+
+``unregisterLanguage(languageName)``
+------------------------------------
+
+Removes a language and its aliases from the library. Used mostly internally.
+
+* ``languageName``: a string with the name of the language being removed.
 
 
 ``registerAliases(alias|aliases, {languageName})``
@@ -138,8 +168,13 @@ Looks up a language by name or alias.
 Returns the language object if found, ``undefined`` otherwise.
 
 
-``requireLanguage(name)``
--------------------------
+``requireLanguage(name)`` (deprecated as of 10.4)
+-------------------------------------------------
+
+**This has been deprecated and will be removed in a future release.**  If you
+need this type of functionality use ``getLanguage`` with your own error
+handling.  It is highly recommended that all inter-dependencies between grammars
+be handled at built-time, not run-time.  This is what the core library now does.
 
 Looks up a language by name or alias.
 

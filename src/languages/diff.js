@@ -6,6 +6,8 @@ Website: https://www.gnu.org/software/diffutils/
 Category: common
 */
 
+import * as regex from '../lib/regex.js';
+
 /** @type LanguageFn */
 export default function(hljs) {
   return {
@@ -15,34 +17,46 @@ export default function(hljs) {
       {
         className: 'meta',
         relevance: 10,
-        variants: [
-          {begin: /^@@ +\-\d+,\d+ +\+\d+,\d+ +@@$/},
-          {begin: /^\*\*\* +\d+,\d+ +\*\*\*\*$/},
-          {begin: /^\-\-\- +\d+,\d+ +\-\-\-\-$/}
-        ]
+        match: regex.either(
+          /^@@ +-\d+,\d+ +\+\d+,\d+ +@@/,
+          /^\*\*\* +\d+,\d+ +\*\*\*\*$/,
+          /^--- +\d+,\d+ +----$/
+        )
       },
       {
         className: 'comment',
         variants: [
-          {begin: /Index: /, end: /$/},
-          {begin: /={3,}/, end: /$/},
-          {begin: /^\-{3}/, end: /$/},
-          {begin: /^\*{3} /, end: /$/},
-          {begin: /^\+{3}/, end: /$/},
-          {begin: /^\*{15}$/ }
+          {
+            begin: regex.either(
+              /Index: /,
+              /^index/,
+              /={3,}/,
+              /^-{3}/,
+              /^\*{3} /,
+              /^\+{3}/,
+              /^diff --git/
+            ),
+            end: /$/
+          },
+          {
+            match: /^\*{15}$/
+          }
         ]
       },
       {
         className: 'addition',
-        begin: '^\\+', end: '$'
+        begin: /^\+/,
+        end: /$/
       },
       {
         className: 'deletion',
-        begin: '^\\-', end: '$'
+        begin: /^-/,
+        end: /$/
       },
       {
         className: 'addition',
-        begin: '^\\!', end: '$'
+        begin: /^!/,
+        end: /$/
       }
     ]
   };

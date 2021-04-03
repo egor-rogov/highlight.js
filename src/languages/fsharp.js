@@ -18,16 +18,76 @@ export default function(hljs) {
     ]
   };
 
+  const KEYWORDS = [
+    "abstract",
+    "and",
+    "as",
+    "assert",
+    "base",
+    "begin",
+    "class",
+    "default",
+    "delegate",
+    "do",
+    "done",
+    "downcast",
+    "downto",
+    "elif",
+    "else",
+    "end",
+    "exception",
+    "extern",
+    "false",
+    "finally",
+    "for",
+    "fun",
+    "function",
+    "global",
+    "if",
+    "in",
+    "inherit",
+    "inline",
+    "interface",
+    "internal",
+    "lazy",
+    "let",
+    "match",
+    "member",
+    "module",
+    "mutable",
+    "namespace",
+    "new",
+    "null",
+    "of",
+    "open",
+    "or",
+    "override",
+    "private",
+    "public",
+    "rec",
+    "return",
+    "sig",
+    "static",
+    "struct",
+    "then",
+    "to",
+    "true",
+    "try",
+    "type",
+    "upcast",
+    "use",
+    "val",
+    "void",
+    "when",
+    "while",
+    "with",
+    "yield"
+  ];
+
   return {
     name: 'F#',
     aliases: ['fs'],
-    keywords:
-      'abstract and as assert base begin class default delegate do done ' +
-      'downcast downto elif else end exception extern false finally for ' +
-      'fun function global if in inherit inline interface internal lazy let ' +
-      'match member module mutable namespace new null of open or ' +
-      'override private public rec return sig static struct then to ' +
-      'true try type upcast use val void when while with yield',
+    keywords: KEYWORDS,
     illegal: /\/\*/,
     contains: [
       {
@@ -39,9 +99,11 @@ export default function(hljs) {
         className: 'string',
         begin: '@"',
         end: '"',
-        contains: [{
-          begin: '""'
-        }]
+        contains: [
+          {
+            begin: '""'
+          }
+        ]
       },
       {
         className: 'string',
@@ -70,12 +132,12 @@ export default function(hljs) {
       {
         className: 'symbol',
         begin: '\\B(\'[A-Za-z])\\b',
-        contains: [
-          hljs.BACKSLASH_ESCAPE
-        ]
+        contains: [hljs.BACKSLASH_ESCAPE]
       },
       hljs.C_LINE_COMMENT_MODE,
-      hljs.inherit(hljs.QUOTE_STRING_MODE, { illegal: null }),
+      hljs.inherit(hljs.QUOTE_STRING_MODE, {
+        illegal: null
+      }),
       hljs.C_NUMBER_MODE
     ]
   };

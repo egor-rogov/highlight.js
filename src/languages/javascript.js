@@ -1,4 +1,3 @@
-/* eslint-disable no-unreachable */
 /*
 Language: JavaScript
 Description: JavaScript (JS) is a lightweight, interpreted, or just-in-time compiled programming language with first-class functions.
@@ -19,7 +18,7 @@ export default function(hljs) {
    * @param {{after:number}} param1
    */
   const hasClosingTag = (match, { after }) => {
-    const tag = match[0].replace("<", "</");
+    const tag = "</" + match[0].slice(1);
     const pos = match.input.indexOf(tag, after);
     return pos !== -1;
   };
@@ -59,19 +58,40 @@ export default function(hljs) {
   };
   const KEYWORDS = {
     $pattern: ECMAScript.IDENT_RE,
-    keyword: ECMAScript.KEYWORDS.join(" "),
-    literal: ECMAScript.LITERALS.join(" "),
-    built_in: ECMAScript.BUILT_INS.join(" ")
+    keyword: ECMAScript.KEYWORDS,
+    literal: ECMAScript.LITERALS,
+    built_in: ECMAScript.BUILT_INS
   };
+
+  // https://tc39.es/ecma262/#sec-literals-numeric-literals
+  const decimalDigits = '[0-9](_?[0-9])*';
+  const frac = `\\.(${decimalDigits})`;
+  // DecimalIntegerLiteral, including Annex B NonOctalDecimalIntegerLiteral
+  // https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
+  const decimalInteger = `0|[1-9](_?[0-9])*|0[0-7]*[89][0-9]*`;
   const NUMBER = {
     className: 'number',
     variants: [
-      { begin: '\\b(0[bB][01]+)n?' },
-      { begin: '\\b(0[oO][0-7]+)n?' },
-      { begin: hljs.C_NUMBER_RE + 'n?' }
+      // DecimalLiteral
+      { begin: `(\\b(${decimalInteger})((${frac})|\\.)?|(${frac}))` +
+        `[eE][+-]?(${decimalDigits})\\b` },
+      { begin: `\\b(${decimalInteger})\\b((${frac})\\b|\\.)?|(${frac})\\b` },
+
+      // DecimalBigIntegerLiteral
+      { begin: `\\b(0|[1-9](_?[0-9])*)n\\b` },
+
+      // NonDecimalIntegerLiteral
+      { begin: "\\b0[xX][0-9a-fA-F](_?[0-9a-fA-F])*n?\\b" },
+      { begin: "\\b0[bB][0-1](_?[0-1])*n?\\b" },
+      { begin: "\\b0[oO][0-7](_?[0-7])*n?\\b" },
+
+      // LegacyOctalIntegerLiteral (does not include underscore separators)
+      // https://tc39.es/ecma262/#sec-additional-syntax-numeric-literals
+      { begin: "\\b0[0-7]+n?\\b" },
     ],
     relevance: 0
   };
+
   const SUBST = {
     className: 'subst',
     begin: '\\$\\{',
@@ -115,7 +135,7 @@ export default function(hljs) {
     ]
   };
   const JSDOC_COMMENT = hljs.COMMENT(
-    '/\\*\\*',
+    /\/\*\*(?!\/)/,
     '\\*/',
     {
       relevance: 0,
@@ -155,7 +175,7 @@ export default function(hljs) {
       hljs.C_LINE_COMMENT_MODE
     ]
   };
-  SUBST.contains = [
+  const SUBST_INTERNALS = [
     hljs.APOS_STRING_MODE,
     hljs.QUOTE_STRING_MODE,
     HTML_TEMPLATE,
@@ -164,6 +184,17 @@ export default function(hljs) {
     NUMBER,
     hljs.REGEXP_MODE
   ];
+  SUBST.contains = SUBST_INTERNALS
+    .concat({
+      // we need to pair up {} inside our subst to prevent
+      // it from ending too early by matching another }
+      begin: /\{/,
+      end: /\}/,
+      keywords: KEYWORDS,
+      contains: [
+        "self"
+      ].concat(SUBST_INTERNALS)
+    });
   const SUBST_AND_COMMENTS = [].concat(COMMENT, SUBST.contains);
   const PARAMS_CONTAINS = SUBST_AND_COMMENTS.concat([
     // eat recursive parens in sub expressions
@@ -190,7 +221,7 @@ export default function(hljs) {
     keywords: KEYWORDS,
     // this will be extended by TypeScript
     exports: { PARAMS_CONTAINS },
-    illegal: /#(?!!)/,
+    illegal: /#(?![$_A-z])/,
     contains: [
       hljs.SHEBANG({
         label: "shebang",
@@ -225,7 +256,7 @@ export default function(hljs) {
           regex.lookahead(regex.concat(
             // we also need to allow for multiple possible comments inbetween
             // the first key:value pairing
-            /(((\/\/.*$)|(\/\*(.|\n)*\*\/))\s*)*/,
+            /(((\/\/.*$)|(\/\*(\*[^/]|[^*])*\*\/))\s*)*/,
             IDENT_RE + '\\s*:'))),
         relevance: 0,
         contains: [
@@ -247,11 +278,12 @@ export default function(hljs) {
             // we have to count the parens to make sure we actually have the
             // correct bounding ( ) before the =>.  There could be any number of
             // sub-expressions inside also surrounded by parens.
-            begin: '(\\([^(]*' +
-              '(\\([^(]*' +
-                '(\\([^(]*' +
-                '\\))?' +
-              '\\))?' +
+            begin: '(\\(' +
+            '[^()]*(\\(' +
+            '[^()]*(\\(' +
+            '[^()]*' +
+            '\\)[^()]*)*' +
+            '\\)[^()]*)*' +
             '\\)|' + hljs.UNDERSCORE_IDENT_RE + ')\\s*=>',
             returnBegin: true,
             end: '\\s*=>',
@@ -260,7 +292,8 @@ export default function(hljs) {
                 className: 'params',
                 variants: [
                   {
-                    begin: hljs.UNDERSCORE_IDENT_RE
+                    begin: hljs.UNDERSCORE_IDENT_RE,
+                    relevance: 0
                   },
                   {
                     className: null,
@@ -325,6 +358,30 @@ export default function(hljs) {
         ],
         illegal: /%/
       },
+      {
+        // prevent this from getting swallowed up by function
+        // since they appear "function like"
+        beginKeywords: "while if switch catch for"
+      },
+      {
+        className: 'function',
+        // we have to count the parens to make sure we actually have the correct
+        // bounding ( ).  There could be any number of sub-expressions inside
+        // also surrounded by parens.
+        begin: hljs.UNDERSCORE_IDENT_RE +
+          '\\(' + // first parens
+          '[^()]*(\\(' +
+            '[^()]*(\\(' +
+              '[^()]*' +
+            '\\)[^()]*)*' +
+          '\\)[^()]*)*' +
+          '\\)\\s*\\{', // end parens
+        returnBegin:true,
+        contains: [
+          PARAMS,
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE }),
+        ]
+      },
       // hack: prevents detection of keywords in some circumstances
       // .keyword()
       // $keyword = x
@@ -340,24 +397,25 @@ export default function(hljs) {
         beginKeywords: 'class',
         end: /[{;=]/,
         excludeEnd: true,
-        illegal: /[:"\[\]]/,
+        illegal: /[:"[\]]/,
         contains: [
           { beginKeywords: 'extends' },
           hljs.UNDERSCORE_TITLE_MODE
         ]
       },
       {
-        beginKeywords: 'constructor',
-        end: /[\{;]/,
+        begin: /\b(?=constructor)/,
+        end: /[{;]/,
         excludeEnd: true,
         contains: [
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE }),
           'self',
           PARAMS
         ]
       },
       {
         begin: '(get|set)\\s+(?=' + IDENT_RE + '\\()',
-        end: /{/,
+        end: /\{/,
         keywords: "get set",
         contains: [
           hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE }),

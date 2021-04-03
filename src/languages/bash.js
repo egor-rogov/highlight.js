@@ -6,19 +6,29 @@ Website: https://www.gnu.org/software/bash/
 Category: common
 */
 
+import * as regex from '../lib/regex.js';
+
 /** @type LanguageFn */
 export default function(hljs) {
   const VAR = {};
   const BRACED_VAR = {
-    begin: /\$\{/, end:/\}/,
+    begin: /\$\{/,
+    end:/\}/,
     contains: [
-      { begin: /:-/, contains: [VAR] } // default values
+      "self",
+      {
+        begin: /:-/,
+        contains: [ VAR ]
+      } // default values
     ]
   };
   Object.assign(VAR,{
     className: 'variable',
     variants: [
-      {begin: /\$[\w\d#@][\w\d_]*/},
+      {begin: regex.concat(/\$[\w\d#@][\w\d_]*/,
+        // negative look-ahead tries to avoid matching patterns that are not
+        // Perl at all like $ident$, @ident@, etc.
+        `(?![\\w\\d])(?![$])`) },
       BRACED_VAR
     ]
   });
@@ -27,6 +37,18 @@ export default function(hljs) {
     className: 'subst',
     begin: /\$\(/, end: /\)/,
     contains: [hljs.BACKSLASH_ESCAPE]
+  };
+  const HERE_DOC = {
+    begin: /<<-?\s*(?=\w+)/,
+    starts: {
+      contains: [
+        hljs.END_SAME_AS_BEGIN({
+          begin: /(\w+)/,
+          end: /(\w+)/,
+          className: 'string'
+        })
+      ]
+    }
   };
   const QUOTE_STRING = {
     className: 'string',
@@ -79,15 +101,34 @@ export default function(hljs) {
     relevance: 0
   };
 
+  const KEYWORDS = [
+    "if",
+    "then",
+    "else",
+    "elif",
+    "fi",
+    "for",
+    "while",
+    "in",
+    "do",
+    "done",
+    "case",
+    "esac",
+    "function"
+  ];
+
+  const LITERALS = [
+    "true",
+    "false"
+  ];
+
   return {
     name: 'Bash',
     aliases: ['sh', 'zsh'],
     keywords: {
       $pattern: /\b[a-z._-]+\b/,
-      keyword:
-        'if then else elif fi for while in do done case esac function',
-      literal:
-        'true false',
+      keyword: KEYWORDS,
+      literal: LITERALS,
       built_in:
         // Shell built-ins
         // http://www.gnu.org/software/bash/manual/html_node/Shell-Builtin-Commands.html
@@ -112,6 +153,7 @@ export default function(hljs) {
       FUNCTION,
       ARITHMETIC,
       hljs.HASH_COMMENT_MODE,
+      HERE_DOC,
       QUOTE_STRING,
       ESCAPED_QUOTE,
       APOS_STRING,
